@@ -28,6 +28,136 @@ function stringifyValue(value: unknown): string {
   return "";
 }
 
+/**
+ * Escape a string for a YAML double-quoted scalar.
+ *
+ * Handles the four common escapes in one regex pass, then only pays for the
+ * rarer control characters when the string actually has one — descriptions can
+ * be several kilobytes.
+ */
+function escapeYamlDoubleQuoted(value: string): string {
+  return (
+    value
+      .replace(/[\\"\r\n\t]/g, (char) => {
+        if (char === "\\") return "\\\\";
+        if (char === '"') return '\\"';
+        if (char === "\t") return "\\t";
+        return "\\n";
+      })
+      // A raw C0 control (or DEL) anywhere makes the whole frontmatter
+      // unparseable; C1 controls are legal YAML and pass through untouched.
+      .replace(/\p{Cc}/gu, (char) =>
+        char === "\u007f" || char.charCodeAt(0) < 0x20
+          ? `\\x${char.charCodeAt(0).toString(16).padStart(2, "0")}`
+          : char,
+      )
+  );
+}
+
+/** Render a value as a YAML double-quoted scalar. */
+function quoteYaml(value: string): string {
+  return `"${escapeYamlDoubleQuoted(value)}"`;
+}
+
+/**
+ * Drop the outer quotes a value may already carry — either literal (`"176"`, as
+ * produced when a template variable is wrapped in quotes) or escaped (`\"176\"`).
+ * Without this, values that arrive pre-quoted end up double-quoted (`"\"176\""`).
+ */
+function stripOuterQuotes(value: string): string {
+  const text = value.trim();
+  if (text.length < 2) return text;
+  const isQuote = (char: string): boolean => char === '"' || char === "'";
+  // Walk in from each end over any run of backslashes, then require a real quote.
+  let start = 0;
+  while (start < text.length && text[start] === "\\") start++;
+  let end = text.length - 1;
+  while (end >= 0 && text[end] === "\\") end--;
+  if (start >= end) return text;
+  if (!isQuote(text[start]) || !isQuote(text[end])) return text;
+  return text.slice(start + 1, end);
+}
+
+// Characters that change a plain scalar's meaning when they lead it: indicators
+// (`- ? : , [ ] { } # & * ! | > ' " % @ \``), a `#`-prefixed comment, or a
+// document marker. A leading `-` is only an indicator when a space follows.
+const LEADING_YAML_INDICATOR = /^[-?:,[\]{}#&*!|>'"%@`]/;
+const DOC_MARKER = /^(---|\.\.\.)(\s|$)/;
+
+/**
+ * True when `value` can be written as a bare YAML scalar.
+ *
+ * Anything that would change meaning if written bare (newlines, a leading
+ * indicator like `- `, an embedded `#` comment, inner `: `, or leading/trailing
+ * spaces) must be quoted instead — otherwise Obsidian either mis-parses the
+ * property or fails to read the whole frontmatter block.
+ */
+function isSafeBareYaml(value: string): boolean {
+  if (!value) return false;
+  if (/[\r\n\t]/.test(value)) return false;
+  if (value !== value.trim()) return false;
+  if (/\s#/.test(value)) return false;
+  if (LEADING_YAML_INDICATOR.test(value)) return false;
+  if (DOC_MARKER.test(value)) return false;
+  if (/:\s/.test(value)) return false;
+  if (value.endsWith(":")) return false;
+  if (value.includes('"')) return false;
+  return true;
+}
+
+/**
+ * Frontmatter keys whose value must be written as a quoted string even when it
+ * looks numeric (page counts, ISBNs). Covers the key spellings used by every
+ * shipped template, so a localised key like the Arabic `عدد الصفحات` behaves the
+ * same as `Pages`.
+ */
+const QUOTED_NUMERIC_KEYS = new Set([
+  "isbn",
+  "isbn 10",
+  "isbn 13",
+  "isbn10",
+  "isbn13",
+  "asin",
+  "pages",
+  "page",
+  "total pages",
+  "total page",
+  "number of pages",
+  "páginas",
+  "paginas",
+  "total de páginas",
+  "pagine",
+  "pagine totali",
+  "seiten",
+  "gesamtseitenzahl",
+  "страниц",
+  "всего страниц",
+  "페이지",
+  "총 페이지 수",
+  "页",
+  "总页数",
+  "ページ",
+  "総ページ数",
+  "عدد الصفحات",
+  "الصفحات",
+]);
+
+/**
+ * Render a scalar for use as a value: bare when safe, quoted otherwise.
+ *
+ * Numeric-looking values are left alone here on purpose — a genuinely numeric
+ * property (a rating, a year) should stay a number. Fields that must remain
+ * strings are handled by `QUOTED_NUMERIC_KEYS` above.
+ */
+function yamlScalar(value: string): string {
+  return isSafeBareYaml(value) ? value : quoteYaml(value);
+}
+
+/** Render a scalar for use as a `- ` list item. */
+function yamlListItem(value: string): string {
+  return isSafeBareYaml(value) ? `- ${value}` : `- ${quoteYaml(value)}`;
+}
+
 export function makeFileName(
   book: Book,
   fileNameFormat?: string,
@@ -190,41 +320,30 @@ export function toStringFrontMatter(frontMatter: object): string {
       if (Array.isArray(newValue)) {
         if (newValue.length === 0) return "";
         const listValues = newValue
-          .map((v) => `- ${stringifyValue(v)}`)
+          .map((v) => yamlListItem(stripOuterQuotes(stringifyValue(v))))
           .join("\n");
         return `${key}:\n${listValues}\n`;
       }
 
-      let stringValue = stringifyValue(newValue).trim();
-      if (stringValue === "" || stringValue === '""') {
+      const stringValue = stripOuterQuotes(stringifyValue(newValue));
+      if (stringValue === "") {
         return `${key}: ""\n`;
       }
 
-      const isNumericStringKey =
-        key.toLowerCase().includes("isbn") ||
-        key.toLowerCase().includes("páginas") ||
-        key.toLowerCase().includes("pages") ||
-        key.toLowerCase().includes("pagine") ||
-        key.toLowerCase().includes("pagina") ||
-        key.toLowerCase().includes("페이지") ||
-        key.toLowerCase().includes("页") ||
-        key.toLowerCase().includes("страниц") ||
-        key.toLowerCase().includes("seiten") ||
-        key.toLowerCase().includes("page");
-
-      if (isNumericStringKey) {
-        // Force quotes for numeric strings like ISBN and Pages to prevent Obsidian/YAML issues
-        stringValue = stringValue.replace(/^"|"$/g, "");
-        return `${key}: "${stringValue}"\n`;
+      // ISBN and page-count keys must stay quoted strings: a bare number would be
+      // typed as a Number property by Obsidian. Explicitly listed rather than
+      // suffix-matched so unrelated keys ("Pagecount", "ISBNote") are unaffected.
+      if (QUOTED_NUMERIC_KEYS.has(key.trim().toLowerCase())) {
+        return `${key}: ${quoteYaml(stringValue)}\n`;
       }
 
       if (isDescriptionKey) {
         // Strip leading/trailing quotes if they exist to avoid double quoting
-        stringValue = stringValue.replace(/^"|"$/g, "");
+        const cleanValue = stringValue;
         let isOpening = true;
-        const hasDoubleQuotes = stringValue.includes('"');
+        const hasDoubleQuotes = cleanValue.includes('"');
 
-        const escapedValue = stringValue.replace(
+        const escapedValue = cleanValue.replace(
           /"|'/gu,
           (match: string, offset: number, fullText: string) => {
             if (match === '"') {
@@ -267,23 +386,12 @@ export function toStringFrontMatter(frontMatter: object): string {
             return char;
           },
         );
-        return `${key}: "${escapedValue}"\n`;
+        // Always double-quote: descriptions routinely span several paragraphs,
+        // and a raw newline inside a quoted scalar makes the YAML unparseable.
+        return `${key}: ${quoteYaml(escapedValue)}\n`;
       }
 
-      if (/\r|\n/.test(stringValue)) {
-        if (stringValue.trim().startsWith("- ")) {
-          return `${key}:\n  ${stringValue.trim()}\n`;
-        }
-        return "";
-      }
-
-      if (/:\s/.test(stringValue) || /"/.test(stringValue)) {
-        // Standard YAML escaping for other fields, but strip outer quotes if present
-        const cleanValue = stringValue.replace(/^"|"$/g, "");
-        const escapedValue = cleanValue.replace(/"/g, '\\"');
-        return `${key}: "${escapedValue}"\n`;
-      }
-      return `${key}: ${stringValue}\n`;
+      return `${key}: ${yamlScalar(stringValue)}\n`;
     })
     .join("")
     .trim();
