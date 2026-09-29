@@ -416,6 +416,12 @@ export default class BookSearchPlugin extends Plugin {
         return;
       }
 
+      if (action === DuplicateAction.UPDATE_METADATA && existingFile) {
+        await this.noteCreator.updateMetadata(existingFile, book);
+        await this.openNewBookNote(existingFile);
+        return;
+      }
+
       const targetFile = await this.noteCreator.create(book);
       await this.openNewBookNote(targetFile);
     } catch (err) {
@@ -455,6 +461,11 @@ export default class BookSearchPlugin extends Plugin {
               await this.checkForDuplicate(book);
             if (action === DuplicateAction.CANCEL) continue;
             if (action === DuplicateAction.OPEN_EXISTING && existingFile) {
+              await this.openNewBookNote(existingFile);
+              continue;
+            }
+            if (action === DuplicateAction.UPDATE_METADATA && existingFile) {
+              await this.noteCreator.updateMetadata(existingFile, book);
               await this.openNewBookNote(existingFile);
               continue;
             }
@@ -519,6 +530,14 @@ export default class BookSearchPlugin extends Plugin {
 
           if (action === DuplicateAction.OPEN_EXISTING && existingFile) {
             progressModal.markDone("Opening existing note...");
+            await this.openNewBookNote(existingFile);
+            continue;
+          }
+
+          if (action === DuplicateAction.UPDATE_METADATA && existingFile) {
+            progressModal.setStatus("Updating existing metadata...");
+            await this.noteCreator.updateMetadata(existingFile, enrichedBook);
+            progressModal.markDone("Metadata updated successfully.");
             await this.openNewBookNote(existingFile);
             continue;
           }
