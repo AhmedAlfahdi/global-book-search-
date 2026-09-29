@@ -1,5 +1,5 @@
 import { Book, FrontMatter } from "@models/book.model";
-import { DefaultFrontmatterKeyType } from "@settings/settings";
+import { DefaultFrontmatterKeyType } from "@settings/key_type";
 
 // == Format Syntax == //
 export const NUMBER_REGEX = /^-?[0-9]*$/;
@@ -12,6 +12,38 @@ export function replaceIllegalFileNameCharactersInString(text: string) {
 
 export function isISBN(str: string) {
   return /^(97(8|9))?\d{9}(\d|X)$/.test(str);
+}
+
+/**
+ * Pick an ISBN out of a note's frontmatter.
+ *
+ * The shipped templates write `isbn 10` / `isbn 13` (with a space), while the
+ * plugin's own lookups used to read only `isbn10` / `isbn13` — so notes created
+ * by this plugin never matched. Accept every spelling a template may use.
+ */
+export function frontmatterIsbn(
+  frontmatter: Record<string, unknown>,
+  length: 10 | 13,
+): string {
+  const wanted = new Set([
+    `isbn${length}`,
+    `isbn ${length}`,
+    `isbn-${length}`,
+    `isbn_${length}`,
+  ]);
+
+  for (const [key, value] of Object.entries(frontmatter)) {
+    if (!wanted.has(key.trim().toLowerCase().replace(/\s+/g, " "))) continue;
+    const text =
+      typeof value === "string"
+        ? value
+        : typeof value === "number"
+          ? String(value)
+          : "";
+    const trimmed = text.trim();
+    if (trimmed) return trimmed;
+  }
+  return "";
 }
 
 /** Render an unknown scalar as a string, without ever producing "[object Object]". */
