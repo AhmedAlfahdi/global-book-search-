@@ -42,8 +42,11 @@ import {
   summarizeProvider,
 } from "@utils/provider_history";
 
-// Re-exported for backwards compatibility: this enum used to live here.
+// Re-exported for backwards compatibility: these used to be declared here, and
+// `FRONTMATTER_TEMPLATES` is part of this module's public surface.
 export { DefaultFrontmatterKeyType };
+export { FRONTMATTER_TEMPLATES };
+export type { FrontmatterTemplateName };
 
 const docUrl = "https://github.com/DuckTapeKiller/global-book-search";
 
