@@ -102,6 +102,20 @@ describe("Localized frontmatter templates", () => {
     }
   });
 
+  it("separates Arabic categories into a dash list", async () => {
+    const output = await render(FRONTMATTER_TEMPLATES.Arabic);
+
+    expect(output).toContain("التصنيفات:\n- رواية\n- أدب عربي\n- أدب أفريقي");
+    expect(output).not.toContain("رواية, أدب عربي");
+  });
+
+  it("renders categories as a dash list in the default Spanish template", async () => {
+    const output = await render(FRONTMATTER_TEMPLATES.Spanish);
+
+    expect(output).toContain("Géneros:\n- رواية\n- أدب عربي\n- أدب أفريقي");
+    expect(output).not.toContain("رواية, أدب عربي");
+  });
+
   it("uses the English template as the default for new installs", () => {
     // Read as text so the settings module (which imports Obsidian UI code) is
     // never loaded into the test runtime.

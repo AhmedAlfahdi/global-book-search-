@@ -284,6 +284,23 @@ export function replaceVariableSyntax(book: Book, text: string): string {
   );
 }
 
+/**
+ * Book fields that are conceptually *lists* but are transported as a single
+ * comma-separated string by the providers (e.g. `"Fantasy, Classics"`).
+ *
+ * Their template variables (`{{categories}}`) are expanded into a YAML list so
+ * each value becomes its own entry instead of one long comma-joined sentence.
+ */
+export const LIST_VALUE_KEYS = new Set(["categories", "tags"]);
+
+/** Split a `"a, b, c"` provider string into `["a", "b", "c"]`. */
+export function splitListValue(value: string): string[] {
+  return value
+    .split(",")
+    .map((item) => item.trim())
+    .filter((item) => item.length > 0);
+}
+
 export function camelToSnakeCase(str: string): string {
   return str.replace(/[A-Z]/g, (letter) => `_${letter.toLowerCase()}`);
 }
