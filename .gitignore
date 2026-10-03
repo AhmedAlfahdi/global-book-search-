@@ -20,3 +20,9 @@ data.json
 coverage/
 debug_scraper.js
 test_vault/
+
+# Other plugin projects cloned/built inside this working copy
+obsidian-rtl/
+rtl-support/node_modules/
+rtl-support/package-lock.json
+rtl-support/main.js
