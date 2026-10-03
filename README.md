@@ -13,6 +13,8 @@
 > ### About this repository
 > This is a **personal fork** of [DuckTapeKiller/global-book-search](https://github.com/DuckTapeKiller/global-book-search), maintained by [AhmedAlfahdi](https://github.com/AhmedAlfahdi).
 > It adds **Arabic frontmatter support**, renders `Categories` as a proper YAML list, and fixes several metadata-correctness bugs. See [What's New in This Fork](#whats-new-in-this-fork).
+>
+> **Installing this fork:** [BRAT](https://github.com/TfTHacker/obsidian42-brat) → *Add beta plugin* → `AhmedAlfahdi/global-book-search-`, or unzip the release assets into `<vault>/.obsidian/plugins/global-book-search/`.
 
 ---
 

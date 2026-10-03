@@ -1,15 +1,15 @@
 {
   "name": "global-book-search",
-  "version": "2.0.5",
+  "version": "2.1.0",
   "description": "Search for books in Google Books, Goodreads, Open Library and local Calibre libraries to create notes.",
-  "homepage": "https://github.com/DuckTapeKiller/global-book-search",
+  "homepage": "https://github.com/AhmedAlfahdi/global-book-search-",
   "main": "main.js",
   "standard-version": {
     "t": ""
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/DuckTapeKiller/global-book-search.git"
+    "url": "git+https://github.com/AhmedAlfahdi/global-book-search-.git"
   },
   "keywords": [
     "book",
@@ -19,7 +19,7 @@
     "goodreads",
     "calibre"
   ],
-  "author": "DuckTapeKiller",
+  "author": "AhmedAlfahdi",
   "license": "MIT",
   "engines": {
     "node": ">= 20",
