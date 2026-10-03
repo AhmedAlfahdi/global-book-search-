@@ -83,6 +83,9 @@ export interface BookSearchPluginSettings {
   // Title tags are off by default: a title is unique per book, so the tag can
   // never be reused. Author tags are the ones that group a shelf.
   enableTitleTag: boolean;
+  // Offer the matching localized frontmatter when a book is written in a
+  // non-Latin script (e.g. an Arabic book while using the English template).
+  askFrontmatterLanguage: boolean;
 
   // Diagnostics / networking
   diagnosticsEnabled: boolean;
@@ -135,6 +138,7 @@ export const DEFAULT_SETTINGS: BookSearchPluginSettings = {
   authorTagPrefix: "authors/",
   titleTagPrefix: "",
   enableTitleTag: false,
+  askFrontmatterLanguage: true,
 
   // Diagnostics / networking
   diagnosticsEnabled: false,
@@ -345,6 +349,23 @@ export class BookSearchSettingTab extends PluginSettingTab {
           void this.plugin.saveSettings().catch((err) => console.warn(err));
         });
     });
+
+    new Setting(containerEl)
+      .setName("Ask about frontmatter language")
+      .setDesc(
+        "When a book's metadata is written in a non-Latin script (Arabic, " +
+          "Cyrillic, Chinese, Japanese, Korean, Greek, Hebrew), offer the " +
+          "matching localized template for that note. The prompt also lets you " +
+          "make it the default for all books.",
+      )
+      .addToggle((toggle) =>
+        toggle
+          .setValue(this.plugin.settings.askFrontmatterLanguage !== false)
+          .onChange((value) => {
+            this.plugin.settings.askFrontmatterLanguage = value;
+            void this.plugin.saveSettings().catch((err) => console.warn(err));
+          }),
+      );
   }
 
   private createContentSetting(containerEl: HTMLElement) {

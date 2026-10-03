@@ -189,6 +189,39 @@ Descriptions and titles are escaped so the frontmatter stays readable by Obsidia
 - Values that would otherwise change meaning are quoted automatically — a title starting with `-`, containing ` #`, or holding a `: ` sequence.
 - Year-only or numeric fields such as page counts and ISBNs stay **strings**, never YAML numbers.
 
+### Script-Aware Frontmatter
+
+When a book's metadata is written in a non-Latin script, the plugin offers the matching localized template **for that one book**:
+
+```
+Use a different frontmatter?
+"موسم الهجرة إلى الشمال" looks like it is written in Arabic.
+Your template uses "English" keys. The "Arabic" template writes them in
+Arabic, which may read better for this book.
+
+  [ Arabic for this note ]  [ Keep my template ]  [ Use Arabic for all books ]
+```
+
+Detected scripts and the template offered:
+
+| Script | Template |
+| --- | --- |
+| Arabic | Arabic |
+| Cyrillic | Russian |
+| Greek | Greek |
+| Hebrew | Hebrew |
+| Han | Simplified Chinese |
+| Japanese (kana) | Japanese |
+| Hangul | Korean |
+
+Notes:
+
+- **Nothing is asked for Latin-script books**, and nothing is asked when your current template already matches the book's script.
+- Choosing **for this note** applies the template to that note only — your saved template is untouched. **Use … for all books** also changes the default.
+- Dismissing the prompt keeps your template, so a stray `Esc` never changes how a note is written.
+- The script is detected mainly from the title, then the original title and author. A Latin title with a transliterated author name stays Latin; a single stray non-Latin character does not trigger a prompt.
+- Turn the whole thing off with **Settings → Book notes → Ask about frontmatter language**.
+
 ### Tags
 
 `{{tags}}` is generated for you, and is written as a YAML list:

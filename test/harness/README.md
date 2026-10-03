@@ -36,4 +36,12 @@ The harness bundles `src/utils/note_creator.ts` with esbuild and stubs the
 Obsidian runtime. It deliberately does not load `main.js`, because the barcode
 dependency in the full bundle requires browser APIs.
 
+```bash
+node test/harness/preview-prompt.cjs
+```
+
+Renders the script-aware frontmatter prompt as static HTML at
+`test_vault/prompt-preview.html`, so its wording and layout can be reviewed in a
+browser without launching Obsidian.
+
 To open the vault in Obsidian: *Open folder as vault* → `test_vault/`.

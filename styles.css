@@ -1536,3 +1536,23 @@ body.is-mobile
   align-items: center;
   justify-content: center;
 }
+
+/* Frontmatter language prompt (script mismatch) */
+.book-search-frontmatter-modal .frontmatter-preview {
+  margin: 0.75em 0 1em;
+  padding: 0.5em 0.75em;
+  border-radius: var(--radius-s);
+  background-color: var(--background-secondary);
+  font-size: var(--font-ui-small);
+}
+
+.book-search-frontmatter-modal .modal-button-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5em;
+  justify-content: flex-end;
+}
+
+.book-search-frontmatter-modal .modal-button-container button {
+  flex: 0 1 auto;
+}

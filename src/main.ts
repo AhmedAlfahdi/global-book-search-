@@ -39,6 +39,12 @@ import { configureHttp } from "@utils/http";
 import { resolveSecret } from "@utils/secrets";
 import { asRecord } from "@utils/json";
 import { frontmatterIsbn } from "@utils/utils";
+import { decideFrontmatterPrompt } from "@utils/book_script";
+import {
+  FrontmatterChoice,
+  FrontmatterLanguageModal,
+} from "@views/frontmatter_language_modal";
+import { FRONTMATTER_TEMPLATES } from "@settings/frontmatter_templates";
 import { loadHistory, serializeHistory } from "@utils/provider_history";
 
 export default class BookSearchPlugin extends Plugin {
@@ -321,6 +327,65 @@ export default class BookSearchPlugin extends Plugin {
   }
 
   // ========================================
+  // Script-aware frontmatter
+  // ========================================
+
+  /** Name of the template currently in use, when it is one of the shipped ones. */
+  private currentTemplateName(): string | undefined {
+    const current = this.settings.frontmatter;
+    return Object.keys(FRONTMATTER_TEMPLATES).find(
+      (name) =>
+        FRONTMATTER_TEMPLATES[name as keyof typeof FRONTMATTER_TEMPLATES] ===
+        current,
+    );
+  }
+
+  /**
+   * Offer the localized template when a book is written in another script.
+   *
+   * Returns the frontmatter to use for this note, or `undefined` to use the
+   * saved template. Never throws: a failure to prompt must not block note
+   * creation.
+   */
+  async resolveFrontmatterForBook(book: Book): Promise<string | undefined> {
+    try {
+      const templateName = this.currentTemplateName();
+      const suggestion = decideFrontmatterPrompt(
+        book,
+        templateName,
+        this.settings.askFrontmatterLanguage !== false,
+      );
+      if (!suggestion?.shouldPrompt) return undefined;
+
+      const suggestedTemplate =
+        FRONTMATTER_TEMPLATES[
+          suggestion.suggestedTemplate as keyof typeof FRONTMATTER_TEMPLATES
+        ];
+      if (!suggestedTemplate) return undefined;
+
+      const choice = await new FrontmatterLanguageModal(this.app, {
+        bookTitle: book.title,
+        currentTemplate: templateName ?? "your saved template",
+        suggestion: suggestion.suggestedTemplate,
+        script: suggestion.script,
+      }).waitForChoice();
+
+      if (choice === FrontmatterChoice.USE_AS_DEFAULT) {
+        this.settings.frontmatter = suggestedTemplate;
+        await this.saveSettings();
+        return undefined;
+      }
+
+      return choice === FrontmatterChoice.USE_FOR_NOTE
+        ? suggestedTemplate
+        : undefined;
+    } catch (err) {
+      console.warn("Frontmatter language prompt failed", err);
+      return undefined;
+    }
+  }
+
+  // ========================================
   // Core Book Search Functions
   // ========================================
 
@@ -422,7 +487,8 @@ export default class BookSearchPlugin extends Plugin {
         return;
       }
 
-      const targetFile = await this.noteCreator.create(book);
+      const frontmatter = await this.resolveFrontmatterForBook(book);
+      const targetFile = await this.noteCreator.create(book, frontmatter);
       await this.openNewBookNote(targetFile);
     } catch (err) {
       if (err instanceof Error && err.message !== "Cancelled request") {
@@ -880,14 +946,20 @@ export default class BookSearchPlugin extends Plugin {
           return;
         }
 
-        // 8. Create note
-        const targetFile = await this.noteCreator.create(enrichedBook);
+        // 8. Offer a script-matched template, then create the note. The progress
+        // modal is closed first so the prompt is not stacked on top of it.
+        progressModal.close();
+        const frontmatter = await this.resolveFrontmatterForBook(enrichedBook);
+        const targetFile = await this.noteCreator.create(
+          enrichedBook,
+          frontmatter,
+        );
 
         const sourcesSummary =
           enrichmentResult.sources.length > 1
             ? `Data from: ${enrichmentResult.sources.join(", ")}`
             : "";
-        progressModal.markDone(
+        new Notice(
           sourcesSummary ? `Note created. ${sourcesSummary}` : "Note created.",
         );
         await this.openNewBookNote(targetFile);

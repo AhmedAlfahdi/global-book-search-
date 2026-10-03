@@ -47,8 +47,18 @@ export class BookNoteCreator {
     private settings: BookSearchPluginSettings,
   ) {}
 
-  async create(book: Book): Promise<TFile> {
-    const renderedContents = await this.getRenderedContents(book);
+  /**
+   * Create a note.
+   *
+   * `frontmatterOverride` replaces `settings.frontmatter` for this note only,
+   * which is how a script-aware template can be applied to a single book
+   * without changing the user's saved template.
+   */
+  async create(book: Book, frontmatterOverride?: string): Promise<TFile> {
+    const renderedContents = await this.getRenderedContents(
+      book,
+      frontmatterOverride,
+    );
     const fileName = makeFileName(book, this.settings.fileNameFormat);
 
     if (this.settings.folder) {
@@ -64,8 +74,14 @@ export class BookNoteCreator {
     return targetFile;
   }
 
-  async getRenderedContents(book: Book): Promise<string> {
-    const resolvedFrontmatter = await this.getResolvedFrontmatter(book);
+  async getRenderedContents(
+    book: Book,
+    frontmatterOverride?: string,
+  ): Promise<string> {
+    const resolvedFrontmatter = await this.getResolvedFrontmatter(
+      book,
+      frontmatterOverride,
+    );
     const cleanFrontmatter = toStringFrontMatter(resolvedFrontmatter);
 
     let content = this.settings.content;
@@ -109,8 +125,14 @@ export class BookNoteCreator {
     });
   }
 
-  async getResolvedFrontmatter(book: Book): Promise<Record<string, unknown>> {
-    let { frontmatter } = this.settings;
+  async getResolvedFrontmatter(
+    book: Book,
+    frontmatterOverride?: string,
+  ): Promise<Record<string, unknown>> {
+    let frontmatter =
+      frontmatterOverride !== undefined
+        ? frontmatterOverride
+        : this.settings.frontmatter;
 
     // Generate tags automatically
     book.tags = createBookTags(

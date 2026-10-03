@@ -4,6 +4,23 @@ All notable changes to this fork are documented in this file.
 
 This fork is based on [DuckTapeKiller/global-book-search](https://github.com/DuckTapeKiller/global-book-search) (itself derived from [anpigon/obsidian-book-search-plugin](https://github.com/anpigon/obsidian-book-search-plugin)). Entries below 2.1.0 are upstream releases; 2.1.0 is this fork's first release.
 
+## 2.3.0
+
+### Added
+
+- **Script-aware frontmatter.** When a book's metadata is written in a non-Latin
+  script, the plugin offers the matching localized template for that note:
+  Arabic, Russian (Cyrillic), Greek, Hebrew, Simplified Chinese (Han), Japanese
+  and Korean. The prompt can apply the template to the one note or make it the
+  default; dismissing it keeps the saved template. Notes are asked about only
+  when the script differs from the current template, so Latin-script books are
+  unaffected.
+- New **Ask about frontmatter language** setting (on by default) to disable the
+  prompt.
+- `BookNoteCreator.create()` and `getRenderedContents()` accept an optional
+  per-note frontmatter override, which is how the suggestion is applied without
+  changing saved settings.
+
 ## 2.2.0
 
 ### Changed
