@@ -4,6 +4,33 @@ All notable changes to this fork are documented in this file.
 
 This fork is based on [DuckTapeKiller/global-book-search](https://github.com/DuckTapeKiller/global-book-search) (itself derived from [anpigon/obsidian-book-search-plugin](https://github.com/anpigon/obsidian-book-search-plugin)). Entries below 2.1.0 are upstream releases; 2.1.0 is this fork's first release.
 
+## 2.3.2
+
+### Changed
+
+- **Arabic template field order and keys updated.** The read-date key is now
+  `Date read` in English rather than `تاريخ القراءة`, and the fields follow the
+  order used in practice:
+
+  `العنوان، العنوان الأصلي، المؤلف، المترجم، مقدمة، الوصف، عدد الصفحات، الناشر، تاريخ النشر، التصنيفات، isbn 10، isbn 13، Asin، Date read، Link، localCover، tags، Read، direction`
+
+  Reader-facing fields stay Arabic; keys that tools, themes and Obsidian
+  recognise (`isbn 10`, `isbn 13`, `Asin`, `Link`, `localCover`, `tags`, `Read`)
+  plus `Date read` keep their conventional spelling, so dates and queries behave
+  the same in every language. `direction: rtl` is retained so an RTL plugin can
+  lay the note out without extra setup.
+
+### Fixed
+
+- `tsconfig.json` now scopes type-checking to this project's own sources. Its
+  `include: ["**/*.ts"]` was sweeping up the sibling `rtl-support/` project,
+  whose CodeMirror types then collided with this repo's copies.
+
+### Upgrade note
+
+Templates live in `data.json`, so an update does not replace the one your vault
+uses. To adopt it: **Settings → Book notes → Frontmatter → Language → Arabic**.
+
 ## 2.3.1
 
 ### Changed

@@ -212,12 +212,12 @@ tags: {{tags}}
 الوصف: "{{description}}"
 عدد الصفحات: "{{totalPage}}"
 الناشر: {{publisher}}
+تاريخ النشر: {{publishDate}}
 التصنيفات: {{categories}}
 isbn 10: "{{isbn10}}"
 isbn 13: "{{isbn13}}"
 Asin: {{asin}}
-تاريخ النشر: {{publishDate}}
-تاريخ القراءة: 
+Date read: 
 Link: {{link}}
 localCover: "{{localCoverImage}}"
 tags: {{tags}}

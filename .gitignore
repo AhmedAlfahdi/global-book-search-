@@ -21,8 +21,8 @@ coverage/
 debug_scraper.js
 test_vault/
 
-# Other plugin projects cloned/built inside this working copy
+# Other plugin projects living inside this working copy. Each has its own
+# repository and gitignore; this repo must not track their files.
 obsidian-rtl/
-rtl-support/node_modules/
-rtl-support/package-lock.json
-rtl-support/main.js
+rtl-support/
+test_vault_rtl/

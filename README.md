@@ -333,7 +333,7 @@ isbn 10: "..."
 isbn 13: "..."
 Asin: B000X
 تاريخ النشر: 1966
-تاريخ القراءة: 
+Date read: 
 Link: ...
 localCover: ""
 tags:

@@ -137,7 +137,7 @@ describe("Arabic frontmatter template", () => {
       "الناشر",
       "التصنيفات",
       "تاريخ النشر",
-      "تاريخ القراءة",
+      "Date read",
       "Link",
       "localCover",
       "tags",
@@ -163,6 +163,34 @@ describe("Arabic frontmatter template", () => {
     expect(template).toContain('localCover: "{{localCoverImage}}"');
   });
 
+  it("uses the documented field order", () => {
+    const keys = FRONTMATTER_TEMPLATES.Arabic.split("\n")
+      .filter((line) => line.includes(":") && !line.startsWith("---"))
+      .map((line) => line.slice(0, line.indexOf(":")).trim());
+
+    expect(keys).toEqual([
+      "العنوان",
+      "العنوان الأصلي",
+      "المؤلف",
+      "المترجم",
+      "مقدمة",
+      "الوصف",
+      "عدد الصفحات",
+      "الناشر",
+      "تاريخ النشر",
+      "التصنيفات",
+      "isbn 10",
+      "isbn 13",
+      "Asin",
+      "Date read",
+      "Link",
+      "localCover",
+      "tags",
+      "Read",
+      "direction",
+    ]);
+  });
+
   it("does not use the old Arabic key spellings", () => {
     const template = FRONTMATTER_TEMPLATES.Arabic;
 
@@ -180,6 +208,7 @@ describe("Arabic frontmatter template", () => {
     expect(output).toContain('عدد الصفحات: "176"');
     expect(output).toContain("Read: false");
     expect(output).toContain("direction: rtl");
+    expect(output).toContain("Date read:");
   });
 
   it("separates Arabic categories into a dash list", async () => {
