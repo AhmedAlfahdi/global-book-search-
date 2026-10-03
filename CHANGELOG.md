@@ -4,6 +4,26 @@ All notable changes to this fork are documented in this file.
 
 This fork is based on [DuckTapeKiller/global-book-search](https://github.com/DuckTapeKiller/global-book-search) (itself derived from [anpigon/obsidian-book-search-plugin](https://github.com/anpigon/obsidian-book-search-plugin)). Entries below 2.1.0 are upstream releases; 2.1.0 is this fork's first release.
 
+## 2.2.0
+
+### Changed
+
+- **Tags are author tags.** Every credited author gets one, so a co-authored book
+  is findable under each name, and they are namespaced under `authors/` by
+  default (`tag:#authors/` lists all authors, `tag:#authors/name` lists one
+  author's books). Set the Author tag prefix to empty for the previous flat tags.
+- **Title tags are off by default.** A title is unique to one book, so its tag is
+  never reused — it duplicated the `Title` property without helping you browse.
+  Re-enable it with the new **Create title tag** setting; the Title tag prefix
+  still applies to it.
+
+### Upgrade note
+
+Existing notes keep the tags they already have; the change applies to notes
+created (or updated via **Update Metadata**) afterwards. To adopt the new scheme
+for an existing library, run **Update Metadata** per book from the duplicate
+dialog, or edit the tags by hand.
+
 ## 2.1.0
 
 First release of the fork. Adds Arabic frontmatter support and fixes several

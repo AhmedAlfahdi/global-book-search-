@@ -504,32 +504,57 @@ function replacer(str: string, reg: RegExp, replaceValue: string) {
   });
 }
 
+/** Turn a name into a tag-safe segment: lowercase, spaces to `_`, drop punctuation. */
+function tagSegment(str: string): string {
+  return str
+    .toLowerCase()
+    .trim()
+    .replace(/\s+/g, "_")
+    .replace(/[^\p{L}\p{N}_]/gu, "");
+}
+
+/**
+ * Build a book's tags.
+ *
+ * Author tags are the useful half: they are stable, they deduplicate across a
+ * shelf, and with a prefix (`authors/`) they give one browsable node per author
+ * — `tag:#authors/` lists everybody, `tag:#authors/ursula_k_le_guin` lists that
+ * author's books. Every credited author gets one, so multi-author books are
+ * findable under each of them.
+ *
+ * Title tags are off by default: they are a slugified copy of the `Title`
+ * property, and because one book has one title they can never be reused. Enable
+ * `enableTitleTag` to get the upstream behaviour back.
+ */
 export function createBookTags(
   book: Book,
   authorPrefix?: string,
   titlePrefix?: string,
+  enableTitleTag = true,
 ): string[] {
-  const sanitize = (str: string) => {
-    return str
-      .toLowerCase()
-      .trim()
-      .replace(/\s+/g, "_")
-      .replace(/[^\p{L}\p{N}_]/gu, "");
-  };
-
   const tags: string[] = [];
+  const prefix = authorPrefix || "";
 
-  // 1. Author tag (primary)
-  const authorName =
-    book.author ||
-    (book.authors && book.authors.length > 0 ? book.authors[0] : "");
-  if (authorName) {
-    tags.push((authorPrefix || "") + sanitize(authorName));
+  // 1. Author tags — one per credited author, primary author first.
+  const authorNames = (book.authors || []).filter((a) => a && a.trim());
+  const orderedAuthors = book.author
+    ? [book.author, ...authorNames.filter((a) => a !== book.author)]
+    : authorNames;
+
+  const seen = new Set<string>();
+  for (const name of orderedAuthors) {
+    const segment = tagSegment(name);
+    if (!segment) continue;
+    const tag = prefix + segment;
+    if (seen.has(tag)) continue;
+    seen.add(tag);
+    tags.push(tag);
   }
 
-  // 2. Title tag
-  if (book.title) {
-    tags.push((titlePrefix || "") + sanitize(book.title));
+  // 2. Title tag (opt-in)
+  if (enableTitleTag && book.title) {
+    const segment = tagSegment(book.title);
+    if (segment) tags.push((titlePrefix || "") + segment);
   }
 
   return tags.filter((t) => t.length > 0);

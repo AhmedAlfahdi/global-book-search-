@@ -15,7 +15,7 @@ Published: {{publishDate}}
 Date read:
 localCover: "{{localCoverImage}}"
 Link: {{link}}
-Tags: {{tags}}
+tags: {{tags}}
 Read: false
 ---
 

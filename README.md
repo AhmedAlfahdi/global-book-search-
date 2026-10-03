@@ -189,10 +189,28 @@ Descriptions and titles are escaped so the frontmatter stays readable by Obsidia
 - Values that would otherwise change meaning are quoted automatically — a title starting with `-`, containing ` #`, or holding a `: ` sequence.
 - Year-only or numeric fields such as page counts and ISBNs stay **strings**, never YAML numbers.
 
-### [!] Mandatory Tag Syntax
-When using the `{{tags}}` variable in YAML, it must be wrapped in quotes to remain valid during the transformation process:
-`tags: "{{tags}}"`
-The plugin will automatically convert this into a proper YAML list format upon note creation.
+### Tags
+
+`{{tags}}` is generated for you, and is written as a YAML list:
+
+```yaml
+tags:
+- authors/terry_pratchett
+- authors/neil_gaiman
+```
+
+**Author tags** are on by default and namespaced under `authors/`, which makes them filterable:
+
+| Search | Result |
+| --- | --- |
+| `tag:#authors/` | every book with a known author |
+| `tag:#authors/ursula_k_le_guin` | that author's books |
+
+Every credited author gets a tag, so a co-authored book appears under each name. Change the namespace with **Author tag prefix** (leave it empty for flat tags).
+
+**Title tags are off by default.** A title is unique to one book, so the tag can never be reused — it duplicates the `Title` property without helping you browse. Turn it on with **Create title tag** if you want the older behaviour, and set **Title tag prefix** (e.g. `books/`) to namespace it.
+
+Wrapping the variable in quotes (`tags: "{{tags}}"`) also works; the plugin writes a list either way.
 
 
 ### Available Variables
@@ -210,7 +228,7 @@ The plugin will automatically convert this into a proper YAML list format upon n
 - `{{categories}}`: List of genres and categories.
 - `{{localCoverImage}}`: Locally saved cover. In **Local** cover mode this is a `[[wikilink]]`; in **Remote** mode it is the image URL.
 - `{{coverUrl}}`: Remote URL of the cover image (available regardless of cover mode).
-- `{{tags}}`: Automated `author/name` and `libros/title` tags.
+- `{{tags}}`: Automated tags — by default one per credited author, prefixed `authors/`.
 
 ### Modifiers
 
@@ -318,7 +336,8 @@ Inside the search dialog, the barcode button opens the camera; point it at a boo
 - **New file name** — a template such as `{{title}} - {{author}}`.
 - **Content** — text appended after the frontmatter of every note (headings, prompts, reading-log scaffolding).
 - **Cover mode** — `Local` downloads the cover into the vault, so `{{localCoverImage}}` becomes a `[[wikilink]]`; `Remote` keeps the image URL; `None` disables covers.
-- **Author / Title tag prefix** — e.g. `escritores/` so `{{tags}}` produces `escritores/name`.
+- **Author tag prefix** — default `authors/`, so `{{tags}}` produces `authors/name`. Every credited author gets a tag, so a co-authored book is findable under each name.
+- **Create title tag** — off by default. See [Tags](#tags).
 
 ### 7. Keep the frontmatter valid
 - Multi-value variables (`{{categories}}`, `{{tags}}`) become YAML lists — one `- ` entry per line. Do not wrap them in quotes if you want a list.

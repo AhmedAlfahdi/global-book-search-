@@ -123,9 +123,9 @@ const book = {
   title:
     typeof titleFlag === "string"
       ? titleFlag
-      : "The Pocket Oracle and Art of Prudence",
-  author: "Baltasar Gracián",
-  authors: ["Baltasar Gracián"],
+      : "Good Omens",
+  author: "Terry Pratchett",
+  authors: ["Terry Pratchett", "Neil Gaiman"],
   translator: "Jeremy Robbins",
   originalTitle: "El oráculo manual y arte de prudencia",
   publisher: "Penguin Classics",
@@ -188,8 +188,9 @@ const settings = {
   enableSeriesLinking: false,
   showTemplatePreview: false,
   showIndividualServiceButtons: false,
-  authorTagPrefix: "",
+  authorTagPrefix: "authors/",
   titleTagPrefix: "",
+  enableTitleTag: false,
 };
 
 // ── Run the real note-creation path ───────────────────────────────────────

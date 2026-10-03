@@ -33,6 +33,7 @@ export function makeSettings(
     showIndividualServiceButtons: false,
     authorTagPrefix: "",
     titleTagPrefix: "",
+    enableTitleTag: true,
     ...overrides,
   } as unknown as BookSearchPluginSettings;
 }

@@ -117,6 +117,7 @@ export class BookNoteCreator {
       book,
       this.settings.authorTagPrefix,
       this.settings.titleTagPrefix,
+      this.settings.enableTitleTag !== false,
     );
 
     // Handle cover image

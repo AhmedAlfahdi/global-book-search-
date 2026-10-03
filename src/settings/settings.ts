@@ -80,6 +80,9 @@ export interface BookSearchPluginSettings {
   showIndividualServiceButtons: boolean; // Show all providers in selection modal
   authorTagPrefix: string;
   titleTagPrefix: string;
+  // Title tags are off by default: a title is unique per book, so the tag can
+  // never be reused. Author tags are the ones that group a shelf.
+  enableTitleTag: boolean;
 
   // Diagnostics / networking
   diagnosticsEnabled: boolean;
@@ -129,8 +132,9 @@ export const DEFAULT_SETTINGS: BookSearchPluginSettings = {
   enableSeriesLinking: true,
   showTemplatePreview: false,
   showIndividualServiceButtons: false,
-  authorTagPrefix: "",
+  authorTagPrefix: "authors/",
   titleTagPrefix: "",
+  enableTitleTag: false,
 
   // Diagnostics / networking
   diagnosticsEnabled: false,
@@ -366,10 +370,14 @@ export class BookSearchSettingTab extends PluginSettingTab {
   private createTagSettings(containerEl: HTMLElement) {
     new Setting(containerEl)
       .setName("Author tag prefix")
-      .setDesc("Add a prefix to the author tag (e.g., 'escritores/').")
+      .setDesc(
+        "Prefix for author tags. Every credited author gets one, so a book with " +
+          "several authors is findable under each. With 'authors/' you can filter " +
+          "by 'tag:#authors/' for all authors, or 'tag:#authors/name' for one.",
+      )
       .addText((text) =>
         text
-          .setPlaceholder("Example: escritores/")
+          .setPlaceholder("Example: authors/")
           .setValue(this.plugin.settings.authorTagPrefix)
           .onChange((value) => {
             this.plugin.settings.authorTagPrefix = value;
@@ -378,11 +386,30 @@ export class BookSearchSettingTab extends PluginSettingTab {
       );
 
     new Setting(containerEl)
+      .setName("Create title tag")
+      .setDesc(
+        "Also tag each note with its title. Off by default: a title is unique to " +
+          "one book, so the tag is never reused — use the Title property to find a " +
+          "book instead.",
+      )
+      .addToggle((toggle) =>
+        toggle
+          .setValue(this.plugin.settings.enableTitleTag === true)
+          .onChange((value) => {
+            this.plugin.settings.enableTitleTag = value;
+            void this.plugin.saveSettings().catch((err) => console.warn(err));
+          }),
+      );
+
+    new Setting(containerEl)
       .setName("Title tag prefix")
-      .setDesc("Add a prefix to the book title tag (e.g., 'libros/').")
+      .setDesc(
+        "Prefix for the title tag, used only when 'Create title tag' is on " +
+          "(e.g., 'books/').",
+      )
       .addText((text) =>
         text
-          .setPlaceholder("Example: libros/")
+          .setPlaceholder("Example: books/")
           .setValue(this.plugin.settings.titleTagPrefix)
           .onChange((value) => {
             this.plugin.settings.titleTagPrefix = value;
