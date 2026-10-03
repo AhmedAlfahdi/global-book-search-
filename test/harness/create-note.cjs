@@ -225,6 +225,33 @@ function buildCreatorBundle() {
 
   const creator = new BookNoteCreator(app, settings);
 
+  // --update: simulate Obsidian's processFrontMatter on an existing note whose
+  // Categories were written by an older build (one flat comma-joined string).
+  if (process.argv.includes("--update")) {
+    const existing = {
+      Title: "The Pocket Oracle and Art of Prudence",
+      Categories:
+        "Philosophy, Nonfiction, Classics, Spain, Self Help, Spanish Literature, Psychology, Literature, Politics, History",
+      Read: false,
+      "Date read": "",
+    };
+    const appWithFm = {
+      ...app,
+      fileManager: {
+        processFrontMatter: async (_file, fn) => fn(existing),
+      },
+    };
+    const creator2 = new BookNoteCreator(appWithFm, settings);
+    console.log("BEFORE:", JSON.stringify(existing.Categories));
+    await creator2.updateMetadata(
+      { path: "Books/The Pocket Oracle and Art of Prudence - Baltasar Gracián.md" },
+      book,
+    );
+    console.log("AFTER :", JSON.stringify(existing.Categories));
+    console.log("Categories is a list now:", Array.isArray(existing.Categories));
+    return;
+  }
+
   if (process.argv.includes("--json")) {
     const resolved = await creator.getResolvedFrontmatter(book);
     console.log(JSON.stringify(resolved, null, 2));
