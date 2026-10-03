@@ -4,6 +4,25 @@ All notable changes to this fork are documented in this file.
 
 This fork is based on [DuckTapeKiller/global-book-search](https://github.com/DuckTapeKiller/global-book-search) (itself derived from [anpigon/obsidian-book-search-plugin](https://github.com/anpigon/obsidian-book-search-plugin)). Entries below 2.1.0 are upstream releases; 2.1.0 is this fork's first release.
 
+## 2.3.1
+
+### Changed
+
+- **Arabic template updated** to mix key styles deliberately: reader-facing
+  fields stay Arabic (`العنوان`, `المؤلف`, `الوصف`, `التصنيفات`, `تاريخ النشر`,
+  `تاريخ القراءة`), while keys that tools, themes and Obsidian recognise keep
+  their conventional spelling (`isbn 10`, `isbn 13`, `Asin`, `Link`,
+  `localCover`, `tags`, `Read`). The previous template used `الغلاف`, `الرابط`
+  and `مقروء`, which nothing else understood.
+- Added `direction: rtl`, so the reading view and RTL-aware themes lay the note
+  out right-to-left.
+
+### Upgrade note
+
+Your saved template lives in `data.json`, so an update does not replace it. To
+adopt the new Arabic template, open **Settings → Book notes → Frontmatter →
+Language → Arabic**, which loads the shipped version into the editor.
+
 ## 2.3.0
 
 ### Added

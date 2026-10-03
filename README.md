@@ -331,13 +331,15 @@ For Arabic notes, choose **Arabic**. You get:
 - أدب أفريقي
 isbn 10: "..."
 isbn 13: "..."
+Asin: B000X
 تاريخ النشر: 1966
-الغلاف: ""
-الرابط: ...
+تاريخ القراءة: 
+Link: ...
+localCover: ""
 tags:
-- الطيب_صالح
-- موسم_الهجرة_إلى_الشمال
-مقروء: false
+- authors/الطيب_صالح
+Read: false
+direction: rtl
 ---
 ```
 

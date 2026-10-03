@@ -10,13 +10,18 @@ describe("end-to-end: Arabic note with a multi-paragraph description", () => {
   it("produces frontmatter Obsidian can parse, with a dash-separated category list", async () => {
     const creator = new BookNoteCreator(
       {} as unknown as App,
-      makeSettings({ frontmatter: FRONTMATTER_TEMPLATES.Arabic }),
+      makeSettings({
+        frontmatter: FRONTMATTER_TEMPLATES.Arabic,
+        authorTagPrefix: "authors/",
+        enableTitleTag: false,
+      }),
     );
 
     const output = await creator.getRenderedContents(
       makeBook({
         title: "موسم الهجرة إلى الشمال",
         author: "الطيب صالح",
+        authors: ["الطيب صالح"],
         translator: "دنيس جونسون-ديفيز",
         publisher: "دار العودة",
         totalPage: 176,
@@ -38,6 +43,9 @@ describe("end-to-end: Arabic note with a multi-paragraph description", () => {
     expect(parsed["عدد الصفحات"]).toBe("176");
     expect(parsed["isbn 13"]).toBe("9780141187209");
     expect(parsed["العنوان"]).toBe("موسم الهجرة إلى الشمال");
-    expect(parsed["مقروء"]).toBe(false);
+    // Tool-recognised keys keep their conventional spelling.
+    expect(parsed["Read"]).toBe(false);
+    expect(parsed["direction"]).toBe("rtl");
+    expect(parsed["tags"]).toEqual(["authors/الطيب_صالح"]);
   });
 });

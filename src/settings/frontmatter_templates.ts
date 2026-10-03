@@ -218,10 +218,11 @@ isbn 13: "{{isbn13}}"
 Asin: {{asin}}
 تاريخ النشر: {{publishDate}}
 تاريخ القراءة: 
-الغلاف: "{{localCoverImage}}"
-الرابط: {{link}}
+Link: {{link}}
+localCover: "{{localCoverImage}}"
 tags: {{tags}}
-مقروء: false
+Read: false
+direction: rtl
 ---`,
   Korean: `---
 제목: {{title}}

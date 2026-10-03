@@ -138,12 +138,36 @@ describe("Arabic frontmatter template", () => {
       "التصنيفات",
       "تاريخ النشر",
       "تاريخ القراءة",
-      "الغلاف",
-      "الرابط",
+      "Link",
+      "localCover",
       "tags",
-      "مقروء",
+      "Read",
+      "direction",
     ]) {
       expect(frontmatterKeys(output)).toContain(key);
+    }
+  });
+
+  it("keeps tool-recognised keys in their conventional spelling", () => {
+    const template = FRONTMATTER_TEMPLATES.Arabic;
+
+    // Obsidian itself, themes and dataview-style tools look for these.
+    expect(template).toContain("tags: {{tags}}");
+    expect(template).toContain("direction: rtl");
+    expect(template).toMatch(/^isbn 10:/m);
+    expect(template).toMatch(/^isbn 13:/m);
+    expect(template).toMatch(/^Asin:/m);
+    expect(template).toMatch(/^Read: false$/m);
+    // The covers must still feed the reader-facing fields.
+    expect(template).toContain("Link: {{link}}");
+    expect(template).toContain('localCover: "{{localCoverImage}}"');
+  });
+
+  it("does not use the old Arabic key spellings", () => {
+    const template = FRONTMATTER_TEMPLATES.Arabic;
+
+    for (const gone of ["الغلاف", "الرابط", "مقروء"]) {
+      expect(template).not.toContain(gone);
     }
   });
 
@@ -154,7 +178,8 @@ describe("Arabic frontmatter template", () => {
     expect(output).toContain("المؤلف: الطيب صالح");
     expect(output).toContain("الناشر: دار العودة");
     expect(output).toContain('عدد الصفحات: "176"');
-    expect(output).toContain("مقروء: false");
+    expect(output).toContain("Read: false");
+    expect(output).toContain("direction: rtl");
   });
 
   it("separates Arabic categories into a dash list", async () => {

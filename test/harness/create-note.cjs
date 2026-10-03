@@ -121,24 +121,25 @@ const categories =
 const titleFlag = arg("title", null);
 const book = {
   title:
-    typeof titleFlag === "string"
-      ? titleFlag
-      : "Good Omens",
-  author: "Terry Pratchett",
-  authors: ["Terry Pratchett", "Neil Gaiman"],
-  translator: "Jeremy Robbins",
-  originalTitle: "El oráculo manual y arte de prudencia",
-  publisher: "Penguin Classics",
-  publishDate: "2011",
-  totalPage: 122,
-  isbn10: "014144245X",
-  isbn13: "9780141442457",
-  asin: "014144245X",
-  categories,
+    typeof titleFlag === "string" ? titleFlag : "محيي الدين بن عربي",
+  author: "طه عبد الباقي سرور",
+  authors: ["طه عبد الباقي سرور"],
+  originalTitle: "",
+  translator: "",
+  publisher: "وكالة الصحافة العربية",
+  publishDate: "2026",
+  totalPage: 280,
+  isbn10: "",
+  isbn13: "",
+  asin: "B0DN27CCTL",
+  categories:
+    typeof arg("categories", null) === "string"
+      ? arg("categories", "")
+      : "Nonfiction, Biography",
   description:
-    "Translated from inside The Spanish Jesuit Baltasar Gracián published in 1647 a Machiavellian manual for dealing with people.\n\nThis cynical, achristelijke collection of practical precepts influenced over the centuries some of the most prominent Western European writers.",
+    "محيي الدين بن عربي، قمة شامخة في سمومها الرائع، شامخة بأسرارها وعلومها وإلهاماتها، قمة هي أعظم ما وصل إليه الخيال المُخلِّق في ميادين العلم والفلسفة والدين.\n\nقمة قد أحاطها صاحبها بالصعاب والمشاق والتهويل، حتى غدا الوصول إليها ضررًا من كفاح لا ينتهي.",
   coverUrl: "",
-  link: "https://www.goodreads.com/book/show/10562577",
+  link: "https://www.goodreads.com/book/show/40137843",
 };
 
 // ── Fake vault that writes into test_vault ────────────────────────────────
