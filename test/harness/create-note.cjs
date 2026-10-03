@@ -118,8 +118,12 @@ const categories =
     ? arg("categories", "")
     : "Philosophy, Nonfiction, Classics, Spain, Self Help, Spanish Literature, Psychology, Literature, Politics, History";
 
+const titleFlag = arg("title", null);
 const book = {
-  title: "The Pocket Oracle and Art of Prudence",
+  title:
+    typeof titleFlag === "string"
+      ? titleFlag
+      : "The Pocket Oracle and Art of Prudence",
   author: "Baltasar Gracián",
   authors: ["Baltasar Gracián"],
   translator: "Jeremy Robbins",
@@ -191,15 +195,14 @@ const settings = {
 // ── Run the real note-creation path ───────────────────────────────────────
 // Bundles src/utils/note_creator.ts (the same source `main.js` is built from)
 // rather than loading main.js, whose barcode dependency needs browser APIs.
-function buildCreatorBundle() {
+function bundle(entry, out) {
   const esbuild = path.join(REPO, "node_modules", ".bin", "esbuild");
-  const out = path.join(REPO, "test_vault", ".harness", "note_creator.cjs");
   fs.mkdirSync(path.dirname(out), { recursive: true });
   const { spawnSync } = require("node:child_process");
   const res = spawnSync(
     esbuild,
     [
-      path.join(REPO, "src", "utils", "note_creator.ts"),
+      entry,
       "--bundle",
       "--format=cjs",
       "--target=es2018",
@@ -216,8 +219,47 @@ function buildCreatorBundle() {
   return out;
 }
 
+function buildCreatorBundle() {
+  return bundle(
+    path.join(REPO, "src", "utils", "note_creator.ts"),
+    path.join(REPO, "test_vault", ".harness", "note_creator.cjs"),
+  );
+}
+
+/**
+ * Build a bundle from a PAST commit, so legacy behaviour can be compared
+ * against the current code instead of being simulated.
+ *
+ *   node test/harness/create-note.cjs --legacy-build 2.0.5
+ */
+function buildLegacyBundle(ref) {
+  const cache = path.join(REPO, "test_vault", ".harness", `legacy-${ref}.cjs`);
+  const worktree = path.join(REPO, "test_vault", ".harness", `wt-${ref}`);
+  if (fs.existsSync(cache)) return cache;
+
+  const { spawnSync } = require("node:child_process");
+  const git = (args) => spawnSync("git", args, { cwd: REPO, encoding: "utf-8" });
+  if (!fs.existsSync(worktree)) {
+    const add = git(["worktree", "add", "--detach", worktree, ref]);
+    if (add.status !== 0) {
+      console.error(add.stderr || add.stdout);
+      process.exit(1);
+    }
+  }
+  return bundle(
+    path.join(worktree, "src", "utils", "note_creator.ts"),
+    cache,
+  );
+}
+
 (async () => {
-  const { BookNoteCreator } = require(buildCreatorBundle());
+  const legacyRef =
+    typeof arg("legacy-build", null) === "string" ? arg("legacy-build", null) : null;
+  const modulePath = legacyRef
+    ? buildLegacyBundle(legacyRef)
+    : buildCreatorBundle();
+  const { BookNoteCreator } = require(modulePath);
+  if (legacyRef) console.log(`source: ${legacyRef} (pre-fix bundle)\n`);
   if (!BookNoteCreator) {
     console.error("BookNoteCreator was not exported by the bundled module.");
     process.exit(1);
